@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>いいこと日記</title>
+<meta name="theme-color" content="#FCF5F3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="いいこと日記">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<style>
+/* Layout: one phone-width column, macaron palette, home screen as hub with a large "today" button */
+:root {
+  color-scheme: light;
+  --pink: #EBB6AE;
+  --green: #B7DABC;
+  --blue: #BFE2F6;
+  --yellow: #EFD49C;
+  --peach: #EDC5A5;      /* between pink and yellow */
+  --mint-sky: #BBDED9;   /* between green and blue */
+  --bg: #FCF5F3;
+  --surface: #FFFFFF;
+  --ink: #4A3B3D;
+  --ink-soft: #7A6669;
+  --line: #EEDDD9;
+  --deep: #B8695D;       /* pink deepened for lines and small marks */
+  --font-display: "Kiwi Maru", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --r: 18px;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body { margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-text-size-adjust: 100%;
+}
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 32px;
+  box-sizing: border-box;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--deep); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.screen { display: flex; flex-direction: column; gap: 20px; }
+
+/* top bar */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; }
+.bar h2 { font-size: 1.15rem; }
+.back { background: none; border: 0; padding: 8px 4px; color: var(--ink-soft); font-size: .95rem; }
+.pill {
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 999px;
+  padding: 6px 14px; font-size: .85rem; color: var(--ink);
+}
+.pill:active { background: var(--line); }
+.btn {
+  border: 0; border-radius: 999px; padding: 12px 22px; font-weight: 700;
+  background: var(--ink); color: var(--surface);
+}
+.btn.soft { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); font-weight: 500; }
+.btn.danger { background: var(--surface); color: var(--deep); border: 1.5px solid var(--pink); font-weight: 500; }
+.btn[disabled] { opacity: .4; cursor: default; }
+
+/* intro */
+.intro { min-height: calc(100% - 20px); justify-content: space-between; }
+.intro-brand { font-family: var(--font-display); font-size: 1rem; color: var(--ink-soft); letter-spacing: .08em; padding-top: 12px; }
+.intro-lead, .intro-flow p.line {
+  font-family: var(--font-display); font-size: 1.25rem; line-height: 1.85; color: var(--ink);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pink) 45%, var(--surface)), color-mix(in srgb, var(--yellow) 45%, var(--surface)));
+  border-radius: 28px; padding: 22px 22px;
+}
+.intro-flow { display: flex; flex-direction: column; gap: 16px; padding: 0 0 120px; }
+.intro-flow p { animation: rise .9s ease both; }
+.intro-flow p.line:nth-child(4n+1) { background: linear-gradient(135deg, color-mix(in srgb, var(--green) 50%, var(--surface)), color-mix(in srgb, var(--blue) 50%, var(--surface))); }
+.intro-flow p.line:nth-child(4n+2) { background: linear-gradient(135deg, color-mix(in srgb, var(--blue) 50%, var(--surface)), color-mix(in srgb, var(--pink) 40%, var(--surface))); }
+.intro-flow p.line:nth-child(4n+3) { background: linear-gradient(135deg, color-mix(in srgb, var(--yellow) 50%, var(--surface)), color-mix(in srgb, var(--green) 45%, var(--surface))); }
+.intro-flow p.intro-note { color: var(--ink-soft); padding: 4px 4px 0; }
+@keyframes rise { from { opacity: .15; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.start-wrap {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+  display: flex; justify-content: center;
+}
+.start-wrap .btn { width: min(100%, 320px); font-size: 1.1rem; padding: 15px; }
+
+/* home */
+.today-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 0 6px; }
+.today-btn {
+  width: 210px; height: 210px; border-radius: 50%; border: 0;
+  background: radial-gradient(circle at 30% 25%, var(--surface) 0 8%, transparent 9%),
+              linear-gradient(145deg, var(--pink), var(--peach) 50%, var(--yellow));
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--pink) 55%, transparent);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.today-btn .t { font-family: var(--font-display); font-size: 1.5rem; }
+.today-btn .d { font-size: .9rem; color: var(--ink-soft); }
+.today-btn:active { transform: scale(.97); }
+.today-status { font-size: .9rem; color: var(--ink-soft); }
+.past {
+  background: var(--surface); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
+  border: 1.5px solid var(--line);
+}
+.past-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.past-head h3 { font-size: 1rem; }
+.past-list { max-height: 7.2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+
+/* title rows (home + review) */
+.trow {
+  display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left;
+  background: none; border: 0; border-bottom: 1px dashed var(--line); padding: 8px 2px;
+}
+.trow:last-child { border-bottom: 0; }
+.trow .td { font-size: .78rem; color: var(--ink-soft); flex: none; font-variant-numeric: tabular-nums; min-width: 3.4em; }
+.trow .tt { min-width: 0; overflow-wrap: anywhere; }
+.empty { color: var(--ink-soft); font-size: .9rem; padding: 6px 0; }
+
+/* record */
+.card { background: var(--surface); border-radius: var(--r); padding: 16px; border: 1.5px solid var(--line); }
+.label { font-size: .85rem; color: var(--ink-soft); letter-spacing: .04em; }
+.scale { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 8px; }
+.faces { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 10px; align-items: end; }
+.faces span { display: flex; justify-content: center; }
+.scale button {
+  aspect-ratio: 1; max-width: 100%; border-radius: 50%; border: 1.5px solid var(--line);
+  background: var(--surface); font-size: .85rem; font-variant-numeric: tabular-nums; padding: 0;
+}
+.scale button[aria-pressed="true"] { background: var(--yellow); border-color: var(--deep); font-weight: 700; }
+.boxes { display: flex; flex-direction: column; gap: 12px; }
+.box {
+  border-radius: var(--r); padding: 14px 16px; border: 2px dashed var(--line); background: color-mix(in srgb, var(--surface) 70%, transparent);
+  text-align: left; width: 100%; display: flex; flex-direction: column; gap: 4px; min-height: 64px; justify-content: center;
+}
+.box.filled { border-style: solid; border-color: transparent; }
+.box.filled:nth-child(4n+1) { background: color-mix(in srgb, var(--pink) 38%, var(--surface)); }
+.box.filled:nth-child(4n+2) { background: color-mix(in srgb, var(--green) 42%, var(--surface)); }
+.box.filled:nth-child(4n+3) { background: color-mix(in srgb, var(--blue) 45%, var(--surface)); }
+.box.filled:nth-child(4n+4) { background: color-mix(in srgb, var(--yellow) 45%, var(--surface)); }
+.box .bt { font-weight: 700; overflow-wrap: anywhere; }
+.box .bx { font-size: .88rem; color: var(--ink-soft); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.box .ph { color: var(--ink-soft); }
+.editor { background: var(--surface); border: 2px solid var(--pink); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+textarea, input[type="text"] {
+  width: 100%; box-sizing: border-box; font: inherit; color: var(--ink); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px;
+}
+textarea { min-height: 120px; resize: vertical; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.more { align-self: center; }
+.done-wrap { display: flex; justify-content: center; padding-top: 4px; }
+.done-wrap .btn { min-width: 220px; font-size: 1.1rem; background: var(--deep); }
+
+/* modal */
+.modal-back {
+  position: fixed; inset: 0; background: color-mix(in srgb, var(--ink) 35%, transparent);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 10;
+}
+.modal {
+  background: var(--surface); width: min(100%, 480px); border-radius: 26px 26px 0 0;
+  padding: 22px max(18px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 14px; box-sizing: border-box;
+  animation: up .25s ease both;
+}
+@keyframes up { from { transform: translateY(30px); opacity: .6; } to { transform: none; opacity: 1; } }
+.modal h3 { font-size: 1.25rem; }
+
+/* mood chart */
+.chart-card { padding: 14px 8px 10px; }
+.chart { display: flex; }
+.yaxis { flex: none; }
+.chart-scroll { overflow-x: auto; overflow-y: hidden; flex: 1; min-width: 0; -webkit-overflow-scrolling: touch; }
+.chart-scroll svg { display: block; }
+.tip { font-size: .85rem; color: var(--ink-soft); text-align: center; min-height: 1.5em; margin-top: 6px; }
+.tip b { color: var(--ink); }
+
+/* detail + learn */
+.detail-title { font-family: var(--font-display); font-size: 1.35rem; }
+.detail-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.meta { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: .9rem; }
+.learn section { display: flex; flex-direction: column; gap: 8px; }
+.learn h3 { font-size: 1.05rem; }
+.learn p { color: var(--ink); }
+.learn .note { font-size: .85rem; color: var(--ink-soft); }
+.learn a { color: var(--deep); }
+.sync-warn { font-size: .85rem; background: color-mix(in srgb, var(--yellow) 45%, var(--surface)); border-radius: 12px; padding: 10px 14px; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  background: var(--ink); color: var(--surface); padding: 10px 18px; border-radius: 999px; font-size: .95rem; z-index: 20;
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+.backup-actions { display: flex; flex-direction: column; gap: 10px; }
+.backup-actions .btn { width: 100%; }
+.backup-text { width: 100%; min-height: 140px; font-size: .8rem; }
+.foot { display: flex; justify-content: center; }
+.foot button { background: none; border: 0; color: var(--ink-soft); font-size: .85rem; text-decoration: underline; padding: 8px; }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- 導入画面 -->
+  <section class="screen intro" id="s-intro">
+    <p class="intro-brand">いいこと日記</p>
+    <p class="intro-lead">人は、自分が思っているよりも良い出来事を経験しています。「よかったこと」を探して記録することで、ポジティブな出来事に気づきやすくなります。</p>
+    <div class="intro-flow" id="intro-flow" aria-live="polite"></div>
+    <div class="start-wrap"><button class="btn" id="start">スタート</button></div>
+  </section>
+
+  <!-- ホーム画面 -->
+  <section class="screen" id="s-home" hidden>
+    <div class="bar">
+      <h2>いいこと日記</h2>
+      <div class="row">
+        <button class="pill" data-go="mood">気分の記録</button>
+        <button class="pill" data-go="learn">学ぶ</button>
+      </div>
+    </div>
+    <p class="sync-warn" id="sync-warn" hidden>このブラウザでは記録を保存できません。プライベートモードを使っている場合は、通常のモードで開いてください。</p>
+    <div class="today-wrap">
+      <button class="today-btn" id="today-btn"><span class="t">今日の記録</span><span class="d" id="today-date"></span></button>
+      <p class="today-status" id="today-status"></p>
+    </div>
+    <div class="past">
+      <div class="past-head">
+        <h3>これまでのいいこと</h3>
+        <button class="pill" data-go="review">振り返る</button>
+      </div>
+      <div class="past-list" id="home-list"></div>
+    </div>
+    <div class="foot"><button data-go="backup">記録のバックアップ</button></div>
+  </section>
+
+  <!-- バックアップ画面 -->
+  <section class="screen" id="s-backup" hidden>
+    <div class="bar">
+      <button class="back" data-go="home">← ホーム</button>
+      <h2>記録のバックアップ</h2>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <p>記録はこのスマホのブラウザの中にだけ保存されています。ブラウザのデータを消したり、機種を変えたりすると記録も消えます。ときどきバックアップを保存しておくと安心です。</p>
+      <div class="backup-actions">
+        <button class="btn" id="export">バックアップを保存する</button>
+        <button class="btn soft" id="import-btn">バックアップから戻す</button>
+        <input type="file" id="import-file" accept=".json,application/json" hidden>
+      </div>
+      <p class="label" id="backup-info"></p>
+    </div>
+    <div class="card" id="backup-text-card" hidden style="display:flex;flex-direction:column;gap:10px">
+      <p class="label">ファイルを保存できない場合は、下の文字をすべてコピーして、メモアプリなどに貼り付けて保管してください。</p>
+      <textarea class="backup-text" id="backup-text" readonly></textarea>
+      <button class="btn soft" id="copy-backup">コピーする</button>
+    </div>
+  </section>
+
+  <!-- 記録画面 -->
+  <section class="screen" id="s-record" hidden>
+    <div class="bar">
+      <button class="back" data-go="home">← ホーム</button>
+      <h2 id="record-date"></h2>
+    </div>
+    <div class="card">
+      <p class="label">今日の気分</p>
+      <div id="record-mood"></div>
+    </div>
+    <div class="boxes" id="boxes"></div>
+    <button class="btn soft more" id="more" hidden>＋ もっと書く</button>
+    <div class="done-wrap"><button class="btn" id="done">書けた!</button></div>
+  </section>
+
+  <!-- 気分の記録画面 -->
+  <section class="screen" id="s-mood" hidden>
+    <div class="bar">
+      <button class="back" data-go="home">← ホーム</button>
+      <h2>気分の記録</h2>
+    </div>
+    <div class="card chart-card">
+      <div id="chart"></div>
+      <p class="tip" id="tip">点をタッチすると、その日の気分が表示されます</p>
+    </div>
+    <p class="empty">左にスクロールすると、さらに前の記録が見られます。</p>
+  </section>
+
+  <!-- 振り返り画面 -->
+  <section class="screen" id="s-review" hidden>
+    <div class="bar">
+      <button class="back" data-go="home">← ホーム</button>
+      <h2>振り返る</h2>
+    </div>
+    <div class="card" id="review-list"></div>
+  </section>
+
+  <!-- 本文表示 -->
+  <section class="screen" id="s-detail" hidden>
+    <div class="bar">
+      <button class="back" id="detail-back">← もどる</button>
+    </div>
+    <div class="card" id="detail"></div>
+  </section>
+
+  <!-- 学ぶ画面 -->
+  <section class="screen learn" id="s-learn" hidden>
+    <div class="bar">
+      <button class="back" data-go="home">← ホーム</button>
+      <h2>学ぶ</h2>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:22px">
+      <section>
+        <h3>なぜ「よかったこと」を書くの?</h3>
+        <p>人の注意は、良い出来事よりも嫌な出来事に向きやすいと言われています。心理学では「ネガティブ・バイアス」と呼ばれる傾向です。嫌なことは強く記憶に残り、小さな良いことは気づかないまま流れていきがちです。</p>
+        <p>「よかったこと」を意識して探し、書きとめることは、この偏りを少しだけ整え直す練習になります。</p>
+      </section>
+      <section>
+        <h3>研究で報告されていること</h3>
+        <p>ポジティブ心理学の研究者マーティン・セリグマンらは、毎晩「その日にあった良いこと3つと、それが起きた理由」を1週間書き出すワークを行った人たちで、幸福感が高まり、抑うつ的な気分が軽くなったと報告しています(2005年)。</p>
+        <p>その後の研究では、効果の大きさは人や条件によってまちまちだという報告もあります。合う人・合わない人がいるワークとして、気軽に試してみてください。</p>
+      </section>
+      <section>
+        <h3>続けるコツ</h3>
+        <p>大きな出来事でなくて大丈夫です。「ごはんがおいしかった」「空がきれいだった」「誰かが笑ってくれた」くらいの小さなことで十分です。</p>
+        <p>1つしか書けない日があっても大丈夫。書けた日の自分を認めてあげることも、このワークの一部です。</p>
+      </section>
+      <section>
+        <h3>気分を記録する意味</h3>
+        <p>気分には波があります。毎日の気分を残しておくと、どんな日に気分が上がりやすいか、下がりやすいかに気づく手がかりになります。数字が上がらない時期があっても、それは自然なことです。</p>
+      </section>
+      <section>
+        <h3>大切なこと</h3>
+        <p class="note">このアプリは、日々をふり返るための道具です。治療や診断の代わりにはなりません。つらい気持ちが長く続くときや、日常生活に困りごとが出ているときは、身近な人や医療機関、相談窓口に相談してください。</p>
+        <p class="note">記録は、このスマホのブラウザの中にだけ保存され、作った人を含め、ほかの人に送られることはありません。ブラウザのデータを消したり、機種を変えたりすると記録も消えるので、ホーム画面の「記録のバックアップ」からときどき保存しておいてください。</p>
+      </section>
+    </div>
+  </section>
+</div>
+
+<!-- 一言でいうと? -->
+<div class="modal-back" id="title-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="title-q">
+    <h3 id="title-q">一言でいうと?</h3>
+    <input type="text" id="title-input" maxlength="40" autocomplete="off">
+    <p class="label">何も書かずに保存すると、薄く表示されている文が見出しになります</p>
+    <div class="row">
+      <button class="btn soft" id="title-cancel">もどる</button>
+      <button class="btn" id="title-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 気分を記録する画面 -->
+<div class="modal-back" id="mood-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mood-q">
+    <h3 id="mood-q">おつかれさまでした。今日の気分は?</h3>
+    <div id="modal-mood"></div>
+    <div class="row">
+      <button class="btn soft" id="mood-cancel">もどる</button>
+      <button class="btn" id="mood-save">記録する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const KEY = 'iikoto-nikki-v1';
+  let data = { entries: [], moods: {} };
+  const clean = d => ({ entries: Array.isArray(d && d.entries) ? d.entries.map(e => ({ ...e })) : [], moods: { ...((d && d.moods) || {}) } });
+  try { const raw = localStorage.getItem(KEY); if (raw) data = clean(JSON.parse(raw)); } catch (e) {}
+
+  /* 保存:このブラウザの中(localStorage)だけ。外部には送らない */
+  let storageOk = true;
+  try { localStorage.setItem(KEY + '-test', '1'); localStorage.removeItem(KEY + '-test'); } catch (e) { storageOk = false; }
+  const persist = () => {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); }
+    catch (e) { toast('保存できませんでした。ブラウザの設定を確認してください'); }
+  };
+  // ブラウザに「このデータは消さないで」と頼む(対応していないブラウザでは何もしない)
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const today = () => ymd(new Date());
+  const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const WD = ['日', '月', '火', '水', '木', '金', '土'];
+  const longDate = s => { const d = parse(s); return `${d.getMonth() + 1}月${d.getDate()}日(${WD[d.getDay()]})`; };
+  const shortDate = s => { const d = parse(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const sorted = () => [...data.entries].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+
+  /* faces at 1, 5, 10 */
+  const face = (kind, size = 28) => {
+    const mouth = kind === 'low' ? 'M10 22 Q16 17 22 22' : kind === 'mid' ? 'M10.5 20.5 L21.5 20.5' : 'M9.5 18.5 Q16 25.5 22.5 18.5';
+    const fill = kind === 'low' ? 'var(--blue)' : kind === 'mid' ? 'var(--green)' : 'var(--yellow)';
+    return `<svg width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="${fill}" stroke="var(--ink)" stroke-width="1.4"/><circle cx="11.5" cy="13" r="1.6" fill="var(--ink)"/><circle cx="20.5" cy="13" r="1.6" fill="var(--ink)"/><path d="${mouth}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+  };
+  const faceFor = v => v <= 3 ? 'low' : v <= 7 ? 'mid' : 'high';
+
+  /* 10-step mood scale */
+  const buildScale = (host, value, onPick) => {
+    host.innerHTML = '';
+    const faces = el('div', 'faces');
+    for (let i = 1; i <= 10; i++) { const s = el('span'); if (i === 1) s.innerHTML = face('low'); if (i === 5) s.innerHTML = face('mid'); if (i === 10) s.innerHTML = face('high'); faces.append(s); }
+    const scale = el('div', 'scale');
+    for (let i = 1; i <= 10; i++) {
+      const b = el('button', '', String(i));
+      b.type = 'button';
+      b.setAttribute('aria-label', `気分 ${i}`);
+      b.setAttribute('aria-pressed', String(i === value));
+      b.addEventListener('click', () => { scale.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); onPick(i); });
+      scale.append(b);
+    }
+    host.append(faces, scale);
+  };
+
+  /* navigation */
+  const screens = ['intro', 'home', 'record', 'mood', 'review', 'detail', 'learn', 'backup'];
+  let current = 'intro', detailFrom = 'home';
+  const go = name => {
+    screens.forEach(s => { $('s-' + s).hidden = s !== name; });
+    current = name;
+    window.scrollTo(0, 0);
+    if (name === 'home') renderHome();
+    if (name === 'record') renderRecord();
+    if (name === 'mood') renderChart();
+    if (name === 'review') renderReview();
+    if (name === 'backup') renderBackup();
+  };
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+
+  let toastTimer;
+  const toast = msg => { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); };
+
+  /* intro: lines flow in one by one */
+  const FLOW = [
+    '人の注意は、良いことより嫌なことに向きやすいと言われています。心理学では「ネガティブ・バイアス」と呼ばれる傾向です。',
+    '嫌なことは強く記憶に残り、小さな良いことは気づかないまま流れていきがちです。',
+    'ある実験では、毎晩「その日にあった良いこと3つ」を書き出したグループで、幸福感が高まったという研究報告があります。',
+    '大きな出来事でなくて大丈夫。ごはんがおいしかった、空がきれいだった、誰かが笑ってくれた。',
+    '1つしか書けない日があっても大丈夫です。まずは気軽にためしてみてください。',
+    'くわしくは、ホーム画面の「学ぶ」で読めます。'
+  ];
+  let flowTimer, flowIdx = 0;
+  const flowNext = () => {
+    if (current !== 'intro' || flowIdx >= FLOW.length) return;
+    const last = flowIdx === FLOW.length - 1;
+    $('intro-flow').append(el('p', last ? 'intro-note' : 'line', FLOW[flowIdx++]));
+    flowTimer = setTimeout(flowNext, 3200);
+  };
+  flowTimer = setTimeout(flowNext, 1200);
+  $('start').addEventListener('click', () => { clearTimeout(flowTimer); go('home'); });
+
+  /* home */
+  const titleRow = (e, showDate = true) => {
+    const b = el('button', 'trow');
+    if (showDate) b.append(el('span', 'td', shortDate(e.date)));
+    b.append(el('span', 'tt', e.title));
+    b.addEventListener('click', () => openDetail(e.id, current));
+    return b;
+  };
+  const renderHome = () => {
+    $('today-date').textContent = longDate(today());
+    const n = data.entries.filter(e => e.date === today()).length;
+    $('today-status').textContent = n ? `今日は${n}つ書けています` : 'まだ書いていません';
+    const list = $('home-list'); list.innerHTML = '';
+    const all = sorted();
+    if (!all.length) list.append(el('p', 'empty', '書いたいいことの見出しが、ここに並びます。'));
+    all.forEach(e => list.append(titleRow(e)));
+  };
+  $('today-btn').addEventListener('click', () => go('record'));
+
+  /* record */
+  let extra = 0, editingId = null, editingNew = false, pending = null, recordDay = today();
+  const todays = () => data.entries.filter(e => e.date === recordDay).sort((a, b) => a.createdAt - b.createdAt);
+
+  const renderRecord = () => {
+    if (recordDay !== today()) { recordDay = today(); extra = 0; editingId = null; editingNew = false; }
+    $('record-date').textContent = longDate(recordDay);
+    buildScale($('record-mood'), data.moods[recordDay], v => { data.moods[recordDay] = v; persist(); });
+    const host = $('boxes'); host.innerHTML = '';
+    const list = todays();
+    list.forEach(e => {
+      if (editingId === e.id) { host.append(editor(e.text, e.id)); return; }
+      const b = el('button', 'box filled');
+      b.append(el('span', 'bt', e.title), el('span', 'bx', e.text));
+      b.addEventListener('click', () => { editingId = e.id; editingNew = false; renderRecord(); });
+      host.append(b);
+    });
+    const empties = Math.max(0, 3 - list.length) + extra;
+    for (let i = 0; i < empties; i++) {
+      if (editingNew && i === 0) { host.append(editor('', null)); continue; }
+      const b = el('button', 'box');
+      b.append(el('span', 'ph', list.length + i === 0 ? '今日のいいことを書く' : 'タップして書く'));
+      b.addEventListener('click', () => { editingNew = true; editingId = null; renderRecord(); });
+      host.append(b);
+    }
+    $('more').hidden = list.length < 3 || empties > 0;
+    $('done').disabled = list.length === 0;
+    const ta = host.querySelector('textarea'); if (ta) ta.focus();
+  };
+
+  const editor = (text, id) => {
+    const wrap = el('div', 'editor');
+    const ta = el('textarea'); ta.id = 'entry-text'; ta.value = text; ta.placeholder = '今日あった、よかったこと';
+    const row = el('div', 'row');
+    if (id) {
+      const del = el('button', 'btn danger', '削除');
+      del.addEventListener('click', () => {
+        if (del.dataset.armed) { data.entries = data.entries.filter(e => e.id !== id); persist(); editingId = null; renderRecord(); toast('削除しました'); }
+        else { del.dataset.armed = '1'; del.textContent = 'もう一度押すと削除'; }
+      });
+      row.append(del);
+    }
+    const cancel = el('button', 'btn soft', 'やめる');
+    cancel.addEventListener('click', () => { editingId = null; editingNew = false; renderRecord(); });
+    const save = el('button', 'btn', '保存');
+    save.addEventListener('click', () => {
+      const t = ta.value.trim();
+      if (!t) { ta.focus(); return; }
+      const old = id ? data.entries.find(e => e.id === id) : null;
+      askTitle(old ? old.title : '', suggestTitle(t), title => {
+        if (old) { old.text = t; old.title = title; }
+        else { data.entries.push({ id: uid(), date: recordDay, text: t, title, createdAt: Date.now() }); if (extra > 0) extra--; }
+        persist(); editingId = null; editingNew = false; renderRecord(); toast('保存しました');
+      });
+    });
+    row.append(cancel, save);
+    wrap.append(ta, row);
+    return wrap;
+  };
+
+  $('more').addEventListener('click', () => { extra++; editingNew = true; editingId = null; renderRecord(); });
+
+  /* 一言でいうと? */
+  // 本文の冒頭(1行目の最初の20文字)を見出しの記入例にする
+  const suggestTitle = text => {
+    const first = Array.from(text.split('\n').find(l => l.trim()) || text).join('').trim();
+    const chars = Array.from(first);
+    return chars.length > 20 ? chars.slice(0, 20).join('') + '…' : first;
+  };
+  let titleCb = null, titleSuggest = '';
+  const askTitle = (prefill, suggestion, cb) => {
+    titleCb = cb; titleSuggest = suggestion;
+    const input = $('title-input');
+    input.value = prefill; input.placeholder = suggestion;
+    $('title-modal').hidden = false;
+  };
+  const closeTitle = () => { $('title-modal').hidden = true; titleCb = null; };
+  $('title-cancel').addEventListener('click', closeTitle);
+  $('title-save').addEventListener('click', () => {
+    const v = $('title-input').value.trim() || titleSuggest;
+    const cb = titleCb; closeTitle(); if (cb) cb(v);
+  });
+  $('title-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) $('title-save').click(); });
+
+  /* 書けた! → 気分 */
+  let modalMood = null;
+  $('done').addEventListener('click', () => {
+    // 今日の気分がすでに選ばれていれば、ポップアップを出さずにホームへ
+    if (data.moods[recordDay]) { go('home'); toast('今日もおつかれさまでした'); return; }
+    modalMood = null;
+    buildScale($('modal-mood'), modalMood, v => { modalMood = v; });
+    $('mood-modal').hidden = false;
+  });
+  $('mood-cancel').addEventListener('click', () => { $('mood-modal').hidden = true; });
+  $('mood-save').addEventListener('click', () => {
+    if (!modalMood) { toast('気分を1〜10から選んでください'); return; }
+    data.moods[recordDay] = modalMood; persist();
+    $('mood-modal').hidden = true; go('home'); toast('今日もおつかれさまでした');
+  });
+
+  /* mood chart */
+  const renderChart = () => {
+    const host = $('chart'); host.innerHTML = '';
+    $('tip').innerHTML = '点をタッチすると、その日の気分が表示されます';
+    const keys = Object.keys(data.moods).sort();
+    const end = parse(today());
+    let start = new Date(end); start.setDate(start.getDate() - 6);
+    if (keys.length && parse(keys[0]) < start) start = parse(keys[0]);
+    const days = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) days.push(ymd(d));
+
+    const H = 230, top = 16, bottom = 44, plotH = H - top - bottom, step = 46, padX = 23;
+    const Y = v => top + (10 - v) / 9 * plotH;
+    const W = padX * 2 + step * (days.length - 1);
+    const ns = 'http://www.w3.org/2000/svg';
+    const mk = (tag, attrs) => { const n = document.createElementNS(ns, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
+
+    const wrap = el('div', 'chart');
+    const ya = mk('svg', { width: 34, height: H, class: 'yaxis', 'aria-hidden': 'true' });
+    [1, 5, 10].forEach(v => {
+      const t = mk('text', { x: 28, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--ink-soft)' });
+      t.textContent = v; ya.append(t);
+    });
+    const scroll = el('div', 'chart-scroll');
+    const svg = mk('svg', { width: W, height: H, role: 'img', 'aria-label': '気分のグラフ' });
+    [1, 5, 10].forEach(v => svg.append(mk('line', { x1: 0, x2: W, y1: Y(v), y2: Y(v), stroke: 'var(--line)', 'stroke-dasharray': v === 5 ? '0' : '4 4' })));
+
+    const pts = days.map((d, i) => ({ d, i, x: padX + i * step, v: data.moods[d] }));
+    // line segments between consecutive recorded days
+    let path = '', prev = null;
+    pts.forEach(p => {
+      if (p.v == null) { prev = null; return; }
+      path += (prev ? 'L' : 'M') + p.x + ' ' + Y(p.v) + ' ';
+      prev = p;
+    });
+    if (path) svg.append(mk('path', { d: path, fill: 'none', stroke: 'var(--deep)', 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+
+    let selected = null;
+    pts.forEach(p => {
+      const lab = mk('text', { x: p.x, y: H - 22, 'text-anchor': 'middle', 'font-size': 11.5, fill: p.d === today() ? 'var(--ink)' : 'var(--ink-soft)', 'font-weight': p.d === today() ? 700 : 400 });
+      lab.textContent = shortDate(p.d); svg.append(lab);
+      const wd = mk('text', { x: p.x, y: H - 6, 'text-anchor': 'middle', 'font-size': 10.5, fill: 'var(--ink-soft)' });
+      wd.textContent = WD[parse(p.d).getDay()]; svg.append(wd);
+      if (p.v == null) return;
+      const dot = mk('circle', { cx: p.x, cy: Y(p.v), r: 5, fill: 'var(--surface)', stroke: 'var(--deep)', 'stroke-width': 2.5 });
+      const hit = mk('circle', { cx: p.x, cy: Y(p.v), r: 20, fill: 'transparent', style: 'cursor:pointer' });
+      hit.addEventListener('click', () => {
+        if (selected) selected.setAttribute('fill', 'var(--surface)');
+        dot.setAttribute('fill', 'var(--yellow)'); selected = dot;
+        $('tip').innerHTML = `${longDate(p.d)}の気分 <b>${p.v}</b> / 10`;
+      });
+      svg.append(dot, hit);
+    });
+    scroll.append(svg);
+    wrap.append(ya, scroll);
+    host.append(wrap);
+    if (!keys.length) $('tip').textContent = 'まだ気分の記録がありません。記録画面で今日の気分を選ぶと、ここにグラフが表示されます。';
+    requestAnimationFrame(() => { scroll.scrollLeft = scroll.scrollWidth; });
+  };
+
+  /* review */
+  const renderReview = () => {
+    const host = $('review-list'); host.innerHTML = '';
+    const all = sorted();
+    if (!all.length) { host.append(el('p', 'empty', 'まだ記録がありません。「今日の記録」から書いてみましょう。')); return; }
+    all.forEach(e => host.append(titleRow(e)));
+  };
+
+  /* detail (read, edit, delete) */
+  let detailId = null, detailEditing = false;
+  const openDetail = (id, from) => { detailId = id; detailFrom = from === 'detail' ? detailFrom : from; detailEditing = false; go('detail'); renderDetail(); };
+  $('detail-back').addEventListener('click', () => go(detailFrom));
+  const renderDetail = () => {
+    const host = $('detail'); host.innerHTML = '';
+    const e = data.entries.find(x => x.id === detailId);
+    if (!e) { go(detailFrom); return; }
+    const box = el('div'); box.style.cssText = 'display:flex;flex-direction:column;gap:14px';
+    const mood = data.moods[e.date];
+    const meta = el('div', 'meta');
+    meta.append(el('span', '', longDate(e.date)));
+    if (mood) { const f = el('span'); f.innerHTML = face(faceFor(mood), 22); meta.append(f, el('span', '', `気分 ${mood}`)); }
+    box.append(meta);
+    if (detailEditing) {
+      const ti = el('input'); ti.type = 'text'; ti.id = 'detail-title'; ti.maxLength = 40; ti.value = e.title;
+      const ta = el('textarea'); ta.id = 'detail-text'; ta.value = e.text;
+      const row = el('div', 'row');
+      const cancel = el('button', 'btn soft', 'やめる'); cancel.addEventListener('click', () => { detailEditing = false; renderDetail(); });
+      const save = el('button', 'btn', '保存');
+      save.addEventListener('click', () => {
+        if (!ti.value.trim() || !ta.value.trim()) return;
+        e.title = ti.value.trim(); e.text = ta.value.trim(); persist(); detailEditing = false; renderDetail(); toast('保存しました');
+      });
+      row.append(cancel, save);
+      box.append(el('p', 'label', '一言でいうと'), ti, el('p', 'label', '本文'), ta, row);
+    } else {
+      box.append(el('p', 'detail-title', e.title), el('p', 'detail-text', e.text));
+      const row = el('div', 'row');
+      const del = el('button', 'btn danger', '削除');
+      del.addEventListener('click', () => {
+        if (del.dataset.armed) { data.entries = data.entries.filter(x => x.id !== e.id); persist(); go(detailFrom); toast('削除しました'); }
+        else { del.dataset.armed = '1'; del.textContent = 'もう一度押すと削除'; }
+      });
+      const edit = el('button', 'btn soft', '編集'); edit.addEventListener('click', () => { detailEditing = true; renderDetail(); });
+      row.append(del, edit);
+      box.append(row);
+    }
+    host.append(box);
+  };
+
+  /* バックアップ */
+  const renderBackup = () => {
+    $('backup-info').textContent = `いま保存されている記録:いいこと ${data.entries.length}件、気分 ${Object.keys(data.moods).length}日分`;
+    $('backup-text-card').hidden = true;
+  };
+  $('export').addEventListener('click', () => {
+    const json = JSON.stringify({ app: 'iikoto-nikki', version: 1, exportedAt: new Date().toISOString(), ...data }, null, 1);
+    try {
+      const blob = new Blob([json], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `いいこと日記_${today()}.json`;
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      toast('バックアップを保存しました');
+    } catch (e) {}
+    $('backup-text').value = json;
+    $('backup-text-card').hidden = false;
+  });
+  $('copy-backup').addEventListener('click', async () => {
+    const ta = $('backup-text');
+    try { await navigator.clipboard.writeText(ta.value); toast('コピーしました'); }
+    catch (e) { ta.focus(); ta.select(); toast('選択した文字をコピーしてください'); }
+  });
+  $('import-btn').addEventListener('click', () => $('import-file').click());
+  $('import-file').addEventListener('change', async ev => {
+    const f = ev.target.files && ev.target.files[0];
+    ev.target.value = '';
+    if (!f) return;
+    try {
+      const d = clean(JSON.parse(await f.text()));
+      if (!d.entries.length && !Object.keys(d.moods).length) { toast('記録が見つからないファイルでした'); return; }
+      // いまの記録に足し合わせる(同じ記録は重ならない)
+      const ids = new Set(data.entries.map(e => e.id));
+      let added = 0;
+      d.entries.forEach(e => { if (e && e.id && e.date && !ids.has(e.id)) { data.entries.push(e); added++; } });
+      data.moods = { ...d.moods, ...data.moods };
+      persist(); renderBackup();
+      toast(`${added}件の記録を戻しました`);
+    } catch (e) { toast('このファイルは読み込めませんでした'); }
+  });
+
+  if (!storageOk) $('sync-warn').hidden = false;
+})();
+</script>
+</body>
+</html>
