@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EBB6AE"/>
+      <stop offset="1" stop-color="#EFD49C"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+  <!-- book body fill -->
+  <path d="M60 34 H124 Q132 34 132 42 V146 H60 Q48 146 48 135 V46 Q48 34 60 34 Z" fill="#FFFDFB"/>
+  <g fill="none" stroke="#5A4547" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- cover outline -->
+    <path d="M48 135 V46 Q48 34 60 34 H124 Q132 34 132 42 V124 H60"/>
+    <!-- pages -->
+    <path d="M60 124 Q48 124 48 135 Q48 146 60 146 H132"/>
+    <path d="M64 135 H132"/>
+    <!-- spine line -->
+    <path d="M62 46 V112"/>
+    <!-- clasp -->
+    <rect x="118" y="80" width="26" height="20" rx="6" fill="#B7DABC"/>
+  </g>
+</svg>
