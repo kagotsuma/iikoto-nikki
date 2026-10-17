@@ -10,7 +10,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="いいこと日記">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
@@ -84,7 +86,37 @@ p { margin: 0; }
   background: linear-gradient(135deg, color-mix(in srgb, var(--pink) 45%, var(--surface)), color-mix(in srgb, var(--yellow) 45%, var(--surface)));
   border-radius: 28px; padding: 22px 22px;
 }
-.intro-flow { display: flex; flex-direction: column; gap: 16px; padding: 0 0 120px; }
+.intro { padding-bottom: 120px; }
+.intro-flow { display: flex; flex-direction: column; gap: 16px; }
+.more-hint {
+  align-self: center; background: none; border: 0; color: var(--ink-soft); font-size: .9rem;
+  padding: 10px 16px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.more-hint .arrow { font-size: 1.1rem; animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+/* tutorial */
+.tour { position: fixed; inset: 0; z-index: 30; }
+.tour-hole {
+  position: fixed; border-radius: 16px; pointer-events: none;
+  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--ink) 58%, transparent);
+  transition: left .25s ease, top .25s ease, width .25s ease, height .25s ease;
+}
+.tour-bubble {
+  position: fixed; left: 50%; transform: translateX(-50%); width: min(360px, calc(100% - 32px)); box-sizing: border-box;
+  background: var(--surface); border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 25%, transparent);
+}
+.tour-bubble::before {
+  content: ""; position: absolute; left: var(--ax, 50%); width: 16px; height: 16px; background: var(--surface);
+  transform: translateX(-50%) rotate(45deg);
+}
+.tour-bubble.below::before { top: -7px; }
+.tour-bubble.above::before { bottom: -7px; }
+.tour-text { line-height: 1.75; }
+.tour-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tour-count { font-size: .8rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.tour-foot .btn { padding: 9px 18px; }
 .intro-flow p { animation: rise .9s ease both; }
 .intro-flow p.line:nth-child(4n+1) { background: linear-gradient(135deg, color-mix(in srgb, var(--green) 50%, var(--surface)), color-mix(in srgb, var(--blue) 50%, var(--surface))); }
 .intro-flow p.line:nth-child(4n+2) { background: linear-gradient(135deg, color-mix(in srgb, var(--blue) 50%, var(--surface)), color-mix(in srgb, var(--pink) 40%, var(--surface))); }
@@ -219,6 +251,7 @@ textarea { min-height: 120px; resize: vertical; }
     <p class="intro-brand">いいこと日記</p>
     <p class="intro-lead">人は、自分が思っているよりも良い出来事を経験しています。「よかったこと」を探して記録することで、ポジティブな出来事に気づきやすくなります。</p>
     <div class="intro-flow" id="intro-flow" aria-live="polite"></div>
+    <button class="more-hint" id="more-hint" type="button"><span>スクロールで続きを読む</span><span class="arrow" aria-hidden="true">↓</span></button>
     <div class="start-wrap"><button class="btn" id="start">スタート</button></div>
   </section>
 
@@ -344,6 +377,7 @@ textarea { min-height: 120px; resize: vertical; }
         <p class="note">このアプリは、日々をふり返るための道具です。治療や診断の代わりにはなりません。つらい気持ちが長く続くときや、日常生活に困りごとが出ているときは、身近な人や医療機関、相談窓口に相談してください。</p>
         <p class="note">記録は、このスマホのブラウザの中にだけ保存され、作った人を含め、ほかの人に送られることはありません。ブラウザのデータを消したり、機種を変えたりすると記録も消えるので、ホーム画面の「記録のバックアップ」からときどき保存しておいてください。</p>
       </section>
+      <button class="btn soft" id="replay-tour" type="button">使い方の案内をもう一度見る</button>
     </div>
   </section>
 </div>
@@ -441,7 +475,74 @@ textarea { min-height: 120px; resize: vertical; }
     if (name === 'mood') renderChart();
     if (name === 'review') renderReview();
     if (name === 'backup') renderBackup();
+    if (TOURS[name] && !tourDone(name)) setTimeout(() => { if (current === name) startTour(name); }, 350);
   };
+
+  /* チュートリアル(初めてその画面を開いた時だけ) */
+  const TOURS = {
+    home: [
+      { sel: '#today-btn', text: 'ここから、今日のいいことを記録できます。', round: '50%' },
+      { sel: '.past', text: '書いたいいことの見出しが、新しい順にここに並びます。タップすると本文を読めます。' },
+      { sel: '.past-head [data-go="review"]', text: '「振り返る」では、これまでの記録をまとめて読み返せます。', round: '999px' },
+      { sel: '.bar [data-go="mood"]', text: '「気分の記録」では、毎日の気分の変化をグラフで見られます。', round: '999px' },
+      { sel: '.bar [data-go="learn"]', text: '「学ぶ」では、いいことを記録する意味や、続けるコツを読めます。', round: '999px' },
+      { sel: '.foot button', text: '記録はこのスマホの中だけに保存されます。ときどきここからバックアップをとっておくと安心です。' }
+    ],
+    record: [
+      { sel: '#s-record .card', text: '今日の気分を、1〜10から選べます。' },
+      { sel: '#boxes > *', text: '枠をタップして、今日のよかったことを書きます。保存すると「一言でいうと?」と聞かれるので、見出しをつけます。' },
+      { sel: '#done', text: '書き終わったら「書けた!」を押します。1つだけでも大丈夫です。', round: '999px' }
+    ]
+  };
+  const TOUR_KEY = 'iikoto-nikki-tour-';
+  const toursShown = new Set();
+  const tourDone = n => { if (toursShown.has(n)) return true; try { return localStorage.getItem(TOUR_KEY + n) === '1'; } catch (e) { return false; } };
+  const markTour = n => { toursShown.add(n); try { localStorage.setItem(TOUR_KEY + n, '1'); } catch (e) {} };
+  let tourActive = false;
+  const startTour = name => {
+    if (tourActive) return;
+    const steps = TOURS[name].filter(s => document.querySelector(s.sel));
+    if (!steps.length) return;
+    markTour(name); tourActive = true;
+    const root = el('div', 'tour'); root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-label', '使い方の案内');
+    const hole = el('div', 'tour-hole'), bub = el('div', 'tour-bubble'), text = el('p', 'tour-text');
+    const foot = el('div', 'tour-foot'), count = el('span', 'tour-count'), btns = el('div', 'row');
+    const skip = el('button', 'btn soft', 'スキップ'), next = el('button', 'btn', '次へ');
+    btns.append(skip, next); foot.append(count, btns); bub.append(text, foot); root.append(hole, bub);
+    document.body.append(root);
+    let i = 0;
+    const place = () => {
+      const s = steps[i], t = document.querySelector(s.sel); if (!t) return;
+      const r = t.getBoundingClientRect(), pad = 6, gap = 14;
+      Object.assign(hole.style, { left: r.left - pad + 'px', top: r.top - pad + 'px', width: r.width + pad * 2 + 'px', height: r.height + pad * 2 + 'px', borderRadius: s.round || '16px' });
+      const bh = bub.offsetHeight, below = r.bottom + pad + gap + bh < window.innerHeight - 16;
+      bub.classList.toggle('below', below); bub.classList.toggle('above', !below);
+      bub.style.top = (below ? r.bottom + pad + gap : Math.max(16, r.top - pad - gap - bh)) + 'px';
+      const br = bub.getBoundingClientRect();
+      bub.style.setProperty('--ax', Math.min(Math.max(r.left + r.width / 2 - br.left, 24), br.width - 24) + 'px');
+    };
+    const show = () => {
+      const s = steps[i];
+      text.textContent = s.text;
+      count.textContent = `${i + 1} / ${steps.length}`;
+      next.textContent = i === steps.length - 1 ? 'わかった' : '次へ';
+      skip.hidden = i === steps.length - 1;
+      const t = document.querySelector(s.sel);
+      if (t) t.scrollIntoView({ block: 'center' });
+      requestAnimationFrame(place);
+      next.focus();
+    };
+    const end = () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place); root.remove(); tourActive = false; window.scrollTo(0, 0); };
+    next.addEventListener('click', () => { if (i < steps.length - 1) { i++; show(); } else end(); });
+    skip.addEventListener('click', end);
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, { passive: true });
+    show();
+  };
+  $('replay-tour').addEventListener('click', () => {
+    Object.keys(TOURS).forEach(n => { toursShown.delete(n); try { localStorage.removeItem(TOUR_KEY + n); } catch (e) {} });
+    go('home');
+  });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
 
   let toastTimer;
@@ -456,15 +557,29 @@ textarea { min-height: 120px; resize: vertical; }
     '1つしか書けない日があっても大丈夫です。まずは気軽にためしてみてください。',
     'くわしくは、ホーム画面の「学ぶ」で読めます。'
   ];
-  let flowTimer, flowIdx = 0;
+  // 一番下までスクロールすると、次の文章が1つずつ出てくる
+  let flowIdx = 0, flowLock = false;
   const flowNext = () => {
-    if (current !== 'intro' || flowIdx >= FLOW.length) return;
+    if (flowIdx >= FLOW.length) return;
     const last = flowIdx === FLOW.length - 1;
     $('intro-flow').append(el('p', last ? 'intro-note' : 'line', FLOW[flowIdx++]));
-    flowTimer = setTimeout(flowNext, 3200);
+    if (flowIdx >= FLOW.length) $('more-hint').hidden = true;
   };
-  flowTimer = setTimeout(flowNext, 1200);
-  $('start').addEventListener('click', () => { clearTimeout(flowTimer); go('home'); });
+  const atBottom = () => window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 48;
+  const tryReveal = () => {
+    if (current !== 'intro' || flowLock || flowIdx >= FLOW.length || !atBottom()) return;
+    flowLock = true; flowNext();
+    setTimeout(() => { flowLock = false; }, 450);
+  };
+  window.addEventListener('scroll', tryReveal, { passive: true });
+  // 画面に収まっていてスクロールできない時は、上に払う操作でも次を出す
+  let touchY = null;
+  window.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchend', e => { if (touchY != null && touchY - e.changedTouches[0].clientY > 30) tryReveal(); touchY = null; }, { passive: true });
+  window.addEventListener('wheel', e => { if (e.deltaY > 0) tryReveal(); }, { passive: true });
+  $('more-hint').addEventListener('click', () => { if (current === 'intro') flowNext(); });
+  flowNext();
+  $('start').addEventListener('click', () => go('home'));
 
   /* home */
   const titleRow = (e, showDate = true) => {
